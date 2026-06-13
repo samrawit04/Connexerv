@@ -1,0 +1,55 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]inaries/
+[Oo]bj/
+[Oo]ut/
+[Bb]in/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.sln.iml
+*.dotCover
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environments
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Appsettings
+appsettings.Development.json
+appsettings.local.json
+
+# Secrets
+secrets.json
+
+# SQLite
+*.sqlite
+*.db
