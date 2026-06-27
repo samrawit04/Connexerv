@@ -9,4 +9,5 @@ public class ServiceProvider
     public string Location { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string ProfileImage { get; set; } = string.Empty;
+    public List<Service> Services { get; set; } = new();
 }
