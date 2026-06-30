@@ -26,6 +26,9 @@ public class BookingsController : ControllerBase
     {
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+        var customerExists = await _context.Users.AnyAsync(u => u.Id == userId);
+        if (!customerExists) return Unauthorized("User account no longer exists. Please log out and log in again.");
+
         var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == dto.ServiceId);
         if (service == null) return NotFound("Service not found.");
 
@@ -34,7 +37,7 @@ public class BookingsController : ControllerBase
             CustomerId = userId,
             ServiceId = service.Id,
             ProviderId = service.ProviderId,
-            Date = dto.Date,
+            Date = dto.Date.ToUniversalTime(),
             Status = "Pending"
         };
 

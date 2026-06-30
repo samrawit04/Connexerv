@@ -21,15 +21,26 @@ public class ProvidersController : ControllerBase
 
     // GET all providers, optional filter by location
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? location)
+    public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
         var query = _context.ServiceProviders
             .Include(p => p.User)
             .Include(p => p.Services)
             .AsQueryable();
 
-        if (!string.IsNullOrEmpty(location))
-            query = query.Where(p => p.Location.Contains(location));
+        if (!string.IsNullOrEmpty(search))
+        {
+            var s = search.ToLower();
+            query = query.Where(p => 
+                (p.Location != null && p.Location.ToLower().Contains(s)) || 
+                (p.User.Name != null && p.User.Name.ToLower().Contains(s)) || 
+                p.Services.Any(srv => 
+                    (srv.Category != null && srv.Category.ToLower().Contains(s)) || 
+                    (srv.Title != null && srv.Title.ToLower().Contains(s)) || 
+                    (srv.Description != null && srv.Description.ToLower().Contains(s))
+                )
+            );
+        }
 
         var providers = await query.ToListAsync();
         return Ok(providers);
