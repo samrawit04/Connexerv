@@ -19,6 +19,18 @@ public class JobPostsController : ControllerBase
         _context = context;
     }
 
+    // Helper — fire and forget a notification
+    private void Notify(Guid userId, string title, string message, string type)
+    {
+        _context.Notifications.Add(new Notification
+        {
+            UserId  = userId,
+            Title   = title,
+            Message = message,
+            Type    = type
+        });
+    }
+
     // ── GET all open jobs (filter by category) ──
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? category, [FromQuery] string? search)
@@ -159,15 +171,25 @@ public class JobPostsController : ControllerBase
             .FirstOrDefaultAsync(a => a.JobPostId == id && a.ProviderId == provider.Id);
         if (existing != null) return BadRequest("You have already applied to this job.");
 
+        var providerUser = await _context.Users.FindAsync(provider.UserId);
         var application = new JobApplication
         {
-            JobPostId = id,
+            JobPostId  = id,
             ProviderId = provider.Id,
-            CoverNote = dto.CoverNote,
-            CvUrl = dto.CvUrl ?? string.Empty
+            CoverNote  = dto.CoverNote,
+            CvUrl      = dto.CvUrl ?? string.Empty
         };
 
         _context.JobApplications.Add(application);
+
+        // Notify the job owner
+        Notify(
+            job.CustomerId,
+            "New Job Application",
+            $"{providerUser?.Name ?? "A provider"} applied to your job: \"{job.Title}\".",
+            "new_application"
+        );
+
         await _context.SaveChangesAsync();
         return Ok(application);
     }
@@ -194,6 +216,25 @@ public class JobPostsController : ControllerBase
             a.Status = a.Id == appId ? "Accepted" : "Rejected";
 
         job.Status = "Closed";
+
+        // Notify the accepted provider
+        var acceptedApp = job.Applications.First(a => a.Id == appId);
+        var acceptedProvider = await _context.ServiceProviders.FindAsync(acceptedApp.ProviderId);
+        if (acceptedProvider != null)
+            Notify(acceptedProvider.UserId, "Application Accepted ✓",
+                $"Congratulations! Your application to \"{job.Title}\" has been accepted.",
+                "application_accepted");
+
+        // Notify rejected providers
+        foreach (var a in job.Applications.Where(a => a.Id != appId))
+        {
+            var rejectedProvider = await _context.ServiceProviders.FindAsync(a.ProviderId);
+            if (rejectedProvider != null)
+                Notify(rejectedProvider.UserId, "Application Update",
+                    $"Another applicant was selected for \"{job.Title}\".",
+                    "application_rejected");
+        }
+
         await _context.SaveChangesAsync();
         return Ok();
     }
@@ -216,6 +257,14 @@ public class JobPostsController : ControllerBase
         if (app == null) return NotFound();
 
         app.Status = "Rejected";
+
+        // Notify the provider
+        var rejectedProvider = await _context.ServiceProviders.FindAsync(app.ProviderId);
+        if (rejectedProvider != null)
+            Notify(rejectedProvider.UserId, "Application Not Selected",
+                $"Your application to \"{job.Title}\" was not selected this time.",
+                "application_rejected");
+
         await _context.SaveChangesAsync();
         return Ok();
     }
@@ -240,6 +289,15 @@ public class JobPostsController : ControllerBase
         if (app.Status != "Accepted") return BadRequest("Only accepted applications can be marked as completed.");
 
         app.Status = "Completed";
+
+        // Notify the provider
+        var completedProvider = await _context.ServiceProviders.FindAsync(app.ProviderId);
+        var customer = await _context.Users.FindAsync(job.CustomerId);
+        if (completedProvider != null)
+            Notify(completedProvider.UserId, "Job Marked as Completed",
+                $"{customer?.Name ?? "The customer"} has marked your work on \"{job.Title}\" as completed. You may receive a review!",
+                "job_completed");
+
         await _context.SaveChangesAsync();
         return Ok();
     }
