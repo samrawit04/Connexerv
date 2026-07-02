@@ -5,12 +5,13 @@ import { useAuth } from "../context/AuthContext";
 import {
   Briefcase, MapPin, DollarSign, Calendar, Tag, Users,
   Clock, ArrowLeft, ChevronDown, CheckCircle, XCircle,
-  AlertCircle, Phone, User, FileText, Loader
+  AlertCircle, Phone, User, FileText, Loader, Paperclip, ExternalLink
 } from "lucide-react";
 
 interface Application {
   id: string;
   coverNote: string;
+  cvUrl?: string;
   status: string;
   appliedAt: string;
   providerId: string;
@@ -43,10 +44,13 @@ export default function JobDetail() {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState("");
   const [coverNote, setCoverNote] = useState("");
+  const [cvFile, setCvFile]       = useState<File | null>(null);
+  const [cvUrl, setCvUrl]         = useState("");
   const [applying, setApplying]   = useState(false);
   const [applyError, setApplyError] = useState("");
   const [applySuccess, setApplySuccess] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const cvInputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     try {
@@ -69,15 +73,30 @@ export default function JobDetail() {
     a => a.providerName === user?.name // best proxy we have on frontend
   );
 
+  const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setApplyError("CV file must be under 5 MB.");
+      return;
+    }
+    setCvFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setCvUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!coverNote.trim()) return;
     setApplying(true);
     setApplyError("");
     try {
-      await api.post(`/JobPosts/${id}/apply`, { coverNote });
+      await api.post(`/JobPosts/${id}/apply`, { coverNote, cvUrl: cvUrl || undefined });
       setApplySuccess("Application submitted! The customer will review it.");
       setCoverNote("");
+      setCvFile(null);
+      setCvUrl("");
       load();
     } catch (err: any) {
       setApplyError(err.response?.data || "Failed to apply.");
@@ -220,6 +239,48 @@ export default function JobDetail() {
                     required style={{ resize:"vertical" }}
                   />
                 </div>
+
+                {/* CV Upload */}
+                <div>
+                  <label className="form-label"><Paperclip size={13} /> CV / Resume (optional)</label>
+                  <div
+                    style={{
+                      border: "1px dashed var(--border)",
+                      borderRadius: 10,
+                      padding: "14px 16px",
+                      background: "rgba(255,255,255,.02)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      cursor: "pointer"
+                    }}
+                    onClick={() => cvInputRef.current?.click()}
+                  >
+                    <Paperclip size={18} color="var(--accent)" style={{ flexShrink:0 }} />
+                    {cvFile ? (
+                      <span style={{ fontSize:13, color:"var(--text-muted)" }}>
+                        ✓ <strong style={{ color:"#fff" }}>{cvFile.name}</strong>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setCvFile(null); setCvUrl(""); }}
+                          style={{ background:"none", border:"none", color:"var(--red)", fontSize:12, cursor:"pointer", marginLeft:10 }}
+                        >
+                          Remove
+                        </button>
+                      </span>
+                    ) : (
+                      <span style={{ fontSize:13, color:"var(--text-faint)" }}>Click to attach PDF, DOC or DOCX · Max 5 MB</span>
+                    )}
+                  </div>
+                  <input
+                    ref={cvInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    style={{ display:"none" }}
+                    onChange={handleCvChange}
+                  />
+                </div>
+
                 <button
                   type="submit"
                   className="btn btn-primary"
@@ -290,7 +351,29 @@ export default function JobDetail() {
 
                     {/* Bio */}
                     {app.providerBio && (
-                      <p style={{ color:"var(--text-faint)", fontSize:12, marginBottom:16, fontStyle:"italic" }}>"{app.providerBio}"</p>
+                      <p style={{ color:"var(--text-faint)", fontSize:12, marginBottom:12, fontStyle:"italic" }}>"{app.providerBio}"</p>
+                    )}
+
+                    {/* CV link */}
+                    {app.cvUrl && (
+                      <div style={{ marginBottom:12 }}>
+                        <a
+                          href={app.cvUrl}
+                          download={`CV-${app.providerName}.pdf`}
+                          style={{
+                            display:"inline-flex", alignItems:"center", gap:6,
+                            fontSize:12, fontWeight:600,
+                            color:"var(--accent)",
+                            textDecoration:"none",
+                            padding:"6px 12px",
+                            borderRadius:8,
+                            border:"1px solid rgba(108,99,255,.3)",
+                            background:"rgba(108,99,255,.08)"
+                          }}
+                        >
+                          <Paperclip size={13} /> View / Download CV
+                        </a>
+                      </div>
                     )}
 
                     {/* Actions — only if job is open and app is pending */}

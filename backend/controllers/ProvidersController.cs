@@ -89,7 +89,8 @@ public class ProvidersController : ControllerBase
             Bio = dto.Bio,
             Location = dto.Location,
             Phone = dto.Phone,
-            ProfileImage = dto.ProfileImage
+            ProfileImage = dto.ProfileImage,
+            CvUrl = dto.CvUrl
         };
 
         _context.ServiceProviders.Add(provider);
@@ -112,6 +113,7 @@ public class ProvidersController : ControllerBase
         provider.Location = dto.Location;
         provider.Phone = dto.Phone;
         provider.ProfileImage = dto.ProfileImage;
+        provider.CvUrl = dto.CvUrl;
 
         await _context.SaveChangesAsync();
         return Ok(provider);

@@ -6,4 +6,5 @@ public class ProviderDto
     public string Location { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string ProfileImage { get; set; } = string.Empty;
+    public string CvUrl { get; set; } = string.Empty;
 }

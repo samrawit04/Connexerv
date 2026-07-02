@@ -8,6 +8,7 @@ public class JobApplication
     public Guid ProviderId { get; set; }
     public ServiceProvider Provider { get; set; } = null!;
     public string CoverNote { get; set; } = string.Empty;
+    public string CvUrl { get; set; } = string.Empty;
     public string Status { get; set; } = "Pending";  // Pending | Accepted | Rejected
     public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
 }

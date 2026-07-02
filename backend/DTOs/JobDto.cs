@@ -9,5 +9,6 @@ public record JobPostDto(
 );
 
 public record JobApplicationDto(
-    string CoverNote
+    string CoverNote,
+    string? CvUrl
 );

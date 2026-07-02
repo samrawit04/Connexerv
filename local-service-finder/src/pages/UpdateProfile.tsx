@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   Upload, Save, CheckCircle, AlertCircle,
   Briefcase, PlusCircle, Tag, AlignLeft, Trash2,
-  MapPin, Phone
+  MapPin, Phone, Paperclip
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -32,11 +32,14 @@ export default function UpdateProfile() {
   const [bio, setBio]               = useState("");
   const [location, setLocation]     = useState("");
   const [phone, setPhone]           = useState("");
+  const [cvFile, setCvFile]         = useState<File | null>(null);
+  const [cvUrl, setCvUrl]           = useState("");
 
   const [loading, setLoading]       = useState(false);
   const [success, setSuccess]       = useState("");
   const [error, setError]           = useState("");
   const fileInputRef                = useRef<HTMLInputElement>(null);
+  const cvInputRef                  = useRef<HTMLInputElement>(null);
 
   // Services states
   const [services, setServices]         = useState<ServiceItem[]>([]);
@@ -68,6 +71,7 @@ export default function UpdateProfile() {
         setLocation(res.data.location || "");
         setPhone(res.data.phone || "");
         if (res.data.profileImage) setImagePreview(res.data.profileImage);
+        if (res.data.cvUrl) setCvUrl(res.data.cvUrl);
       }
     } catch { /* ignore */ }
   };
@@ -90,6 +94,16 @@ export default function UpdateProfile() {
     reader.readAsDataURL(file);
   };
 
+  const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("CV must be under 5 MB."); return; }
+    setCvFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setCvUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); setSuccess(""); setLoading(true);
@@ -97,7 +111,8 @@ export default function UpdateProfile() {
       if (user?.role === "Provider" && providerId) {
         await api.put(`/Providers/${providerId}`, {
           bio, location, phone,
-          profileImage: imagePreview || ""
+          profileImage: imagePreview || "",
+          cvUrl: cvUrl || ""
         });
       }
       setSuccess("Profile updated successfully!");
@@ -231,6 +246,58 @@ export default function UpdateProfile() {
                     <AlignLeft size={17} className="input-icon" style={{ top: 16, transform: "none" }} />
                     <textarea className="form-input" rows={3} style={{ paddingLeft: 44, resize: "vertical" }} value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell customers about your skills and experience..." required />
                   </div>
+                </div>
+
+                {/* CV Upload */}
+                <div>
+                  <label className="form-label"><Paperclip size={13} /> CV / Resume (optional)</label>
+                  <div
+                    style={{
+                      border: "1px dashed var(--border)",
+                      borderRadius: 10,
+                      padding: "14px 16px",
+                      background: "rgba(255,255,255,.02)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      cursor: "pointer"
+                    }}
+                    onClick={() => cvInputRef.current?.click()}
+                  >
+                    <Paperclip size={18} color="var(--accent)" style={{ flexShrink: 0 }} />
+                    {cvFile ? (
+                      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                        ✓ <strong style={{ color: "#fff" }}>{cvFile.name}</strong>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setCvFile(null); setCvUrl(""); }}
+                          style={{ background: "none", border: "none", color: "var(--red)", fontSize: 12, cursor: "pointer", marginLeft: 10 }}
+                        >
+                          Remove
+                        </button>
+                      </span>
+                    ) : cvUrl ? (
+                      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                        ✓ CV on file
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setCvUrl(""); setCvFile(null); }}
+                          style={{ background: "none", border: "none", color: "var(--red)", fontSize: 12, cursor: "pointer", marginLeft: 10 }}
+                        >
+                          Remove
+                        </button>
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 13, color: "var(--text-faint)" }}>Click to attach PDF, DOC or DOCX · Max 5 MB</span>
+                    )}
+                  </div>
+                  <input
+                    ref={cvInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    style={{ display: "none" }}
+                    onChange={handleCvChange}
+                  />
                 </div>
               </>
             )}

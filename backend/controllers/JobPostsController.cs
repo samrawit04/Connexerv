@@ -86,6 +86,7 @@ public class JobPostsController : ControllerBase
             {
                 a.Id,
                 a.CoverNote,
+                a.CvUrl,
                 a.Status,
                 a.AppliedAt,
                 ProviderId = a.ProviderId,
@@ -162,7 +163,8 @@ public class JobPostsController : ControllerBase
         {
             JobPostId = id,
             ProviderId = provider.Id,
-            CoverNote = dto.CoverNote
+            CoverNote = dto.CoverNote,
+            CvUrl = dto.CvUrl ?? string.Empty
         };
 
         _context.JobApplications.Add(application);
@@ -264,6 +266,7 @@ public class JobPostsController : ControllerBase
             {
                 a.Id,
                 a.CoverNote,
+                a.CvUrl,
                 a.Status,
                 a.AppliedAt,
                 Job = new
