@@ -1,18 +1,18 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Mail, Lock, User, AlertCircle, UserCheck, Briefcase, Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
-  const [name, setName]               = useState("");
-  const [email, setEmail]             = useState("");
-  const [password, setPassword]       = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole]               = useState<"Customer" | "Provider">("Customer");
-  const [error, setError]             = useState("");
-  const [loading, setLoading]         = useState(false);
-  const { register }                  = useAuth();
-  const navigate                      = useNavigate();
+  const [role, setRole] = useState<"Customer" | "Provider">("Customer");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +29,8 @@ export default function Register() {
   };
 
   const roleOptions: { value: "Customer" | "Provider"; icon: React.ReactNode; title: string; desc: string }[] = [
-    { value: "Customer", icon: <UserCheck size={20}/>, title: "Customer",  desc: "Browse & book services" },
-    { value: "Provider", icon: <Briefcase size={20}/>, title: "Provider",  desc: "Offer your services"    },
+    { value: "Customer", icon: <UserCheck size={20} />, title: "Customer", desc: "Browse & book services" },
+    { value: "Provider", icon: <Briefcase size={20} />, title: "Provider", desc: "Offer your services" },
   ];
 
   return (
@@ -45,7 +45,7 @@ export default function Register() {
       <Link to="/" className="login-brand">
         <div className="login-brand-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <span>LocalFinder</span>
@@ -66,13 +66,13 @@ export default function Register() {
           </p>
 
           {/* Feature highlights grid */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, maxWidth: 420 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxWidth: 420 }}>
             {["Free to join", "5 000+ providers", "10 000+ bookings", "Instant match"].map((text, i) => (
               <div key={i} style={{
-                background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)",
-                borderRadius:12, padding:"12px 14px", textAlign:"center"
+                background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)",
+                borderRadius: 12, padding: "12px 14px", textAlign: "center"
               }}>
-                <span style={{ color:"#fff", fontWeight:600, fontSize:13 }}>{text}</span>
+                <span style={{ color: "#fff", fontWeight: 600, fontSize: 13 }}>{text}</span>
               </div>
             ))}
           </div>
@@ -99,7 +99,7 @@ export default function Register() {
             )}
 
             {/* Role selector */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
               {roleOptions.map(opt => (
                 <button
                   key={opt.value}
@@ -108,15 +108,15 @@ export default function Register() {
                   style={{
                     background: role === opt.value ? "rgba(108,99,255,.12)" : "rgba(255,255,255,.02)",
                     border: `1px solid ${role === opt.value ? "rgba(108,99,255,.4)" : "rgba(255,255,255,.06)"}`,
-                    borderRadius:12, padding:"12px 10px", cursor:"pointer", transition:"all .2s",
-                    display:"flex", flexDirection:"column", alignItems:"center", gap:4, font:"inherit"
+                    borderRadius: 12, padding: "12px 10px", cursor: "pointer", transition: "all .2s",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4, font: "inherit"
                   }}
                 >
                   <span style={{ color: role === opt.value ? "var(--accent)" : "var(--text-faint)" }}>
                     {opt.icon}
                   </span>
-                  <span style={{ color:"#fff", fontWeight:700, fontSize:13 }}>{opt.title}</span>
-                  <span style={{ color:"var(--text-muted)", fontSize:11, textAlign:"center", lineHeight:1.2 }}>{opt.desc}</span>
+                  <span style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>{opt.title}</span>
+                  <span style={{ color: "var(--text-muted)", fontSize: 11, textAlign: "center", lineHeight: 1.2 }}>{opt.desc}</span>
                 </button>
               ))}
             </div>
