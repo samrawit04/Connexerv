@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
     LogOut, Home, Compass, LayoutDashboard,
-    Settings, UserCircle, UserCog, ChevronDown, Briefcase as BriefcaseIcon
+    UserCircle, UserCog, ChevronDown, Briefcase as BriefcaseIcon
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 
@@ -76,54 +76,54 @@ export default function Navbar() {
                                 <NotificationBell />
                                 {/* ── Profile dropdown ── */}
                                 <div ref={menuRef} style={{ position: "relative" }}>
-                                <button
-                                    onClick={() => setMenuOpen(prev => !prev)}
-                                    className="nav-profile-badge"
-                                    data-role={user.role.toUpperCase()}
-                                    style={{ border: "none" }}
-                                >
-                                    <div style={{
-                                        width: "28px", height: "28px", borderRadius: "50%",
-                                        background: "linear-gradient(135deg, #6C63FF, #A259FF)",
-                                        display: "flex", alignItems: "center", justifyContent: "center",
-                                        flexShrink: 0
-                                    }}>
-                                        <UserCircle size={18} color="#fff" />
-                                    </div>
-                                    <span className="nav-profile-name">{user.name}</span>
-                                    <span className="nav-profile-role">{user.role.toUpperCase()}</span>
-                                    <ChevronDown
-                                        size={14}
-                                        className="nav-profile-logout-icon"
-                                        style={{ transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}
-                                    />
-                                </button>
-
-                                {/* Dropdown menu */}
-                                {menuOpen && (
-                                    <div className="nav-dropdown">
-                                        <div className="nav-dropdown-header">
-                                            <p className="nav-dropdown-name">{user.name}</p>
-                                            <p className="nav-dropdown-email" style={{ color: "var(--text-faint)", fontSize: 12, margin: 0 }}>
-                                                {user.role}
-                                            </p>
+                                    <button
+                                        onClick={() => setMenuOpen(prev => !prev)}
+                                        className="nav-profile-badge"
+                                        data-role={user.role.toUpperCase()}
+                                        style={{ border: "none" }}
+                                    >
+                                        <div style={{
+                                            width: "28px", height: "28px", borderRadius: "50%",
+                                            background: "linear-gradient(135deg, #6C63FF, #A259FF)",
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                            flexShrink: 0
+                                        }}>
+                                            <UserCircle size={18} color="#fff" />
                                         </div>
-                                        <div className="nav-dropdown-divider" />
-                                        <Link
-                                            to="/profile"
-                                            className="nav-dropdown-item"
-                                            onClick={() => setMenuOpen(false)}
-                                        >
-                                            <UserCog size={15} /> Update Profile
-                                        </Link>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="nav-dropdown-item nav-dropdown-item-danger"
-                                        >
-                                            <LogOut size={15} /> Logout
-                                        </button>
-                                    </div>
-                                )}
+                                        <span className="nav-profile-name">{user.name}</span>
+                                        <span className="nav-profile-role">{user.role.toUpperCase()}</span>
+                                        <ChevronDown
+                                            size={14}
+                                            className="nav-profile-logout-icon"
+                                            style={{ transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}
+                                        />
+                                    </button>
+
+                                    {/* Dropdown menu */}
+                                    {menuOpen && (
+                                        <div className="nav-dropdown">
+                                            <div className="nav-dropdown-header">
+                                                <p className="nav-dropdown-name">{user.name}</p>
+                                                <p className="nav-dropdown-email" style={{ color: "var(--text-faint)", fontSize: 12, margin: 0 }}>
+                                                    {user.role}
+                                                </p>
+                                            </div>
+                                            <div className="nav-dropdown-divider" />
+                                            <Link
+                                                to="/profile"
+                                                className="nav-dropdown-item"
+                                                onClick={() => setMenuOpen(false)}
+                                            >
+                                                <UserCog size={15} /> Update Profile
+                                            </Link>
+                                            <button
+                                                onClick={handleLogout}
+                                                className="nav-dropdown-item nav-dropdown-item-danger"
+                                            >
+                                                <LogOut size={15} /> Logout
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ) : (
