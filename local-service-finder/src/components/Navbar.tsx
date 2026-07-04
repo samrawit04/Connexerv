@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
     LogOut, Home, Compass, LayoutDashboard,
-    UserCircle, UserCog, ChevronDown, Briefcase as BriefcaseIcon, MessageSquare
+    UserCog, ChevronDown, Briefcase as BriefcaseIcon, MessageSquare
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 import api from "../services/api";
@@ -114,18 +114,18 @@ export default function Navbar() {
                                         onClick={() => setMenuOpen(prev => !prev)}
                                         className="nav-profile-badge"
                                         data-role={user.role.toUpperCase()}
-                                        style={{ border: "none" }}
+                                        style={{ border: "none", gap: "6px", padding: "4px 8px 4px 4px" }}
+                                        title={`${user.name} (${user.role})`}
                                     >
                                         <div style={{
-                                            width: "28px", height: "28px", borderRadius: "50%",
+                                            width: "32px", height: "32px", borderRadius: "50%",
                                             background: "linear-gradient(135deg, #6C63FF, #A259FF)",
                                             display: "flex", alignItems: "center", justifyContent: "center",
-                                            flexShrink: 0
+                                            flexShrink: 0, fontSize: "14px", fontWeight: 700, color: "#fff",
+                                            letterSpacing: 0
                                         }}>
-                                            <UserCircle size={18} color="#fff" />
+                                            {user.name.charAt(0).toUpperCase()}
                                         </div>
-                                        <span className="nav-profile-name">{user.name}</span>
-                                        <span className="nav-profile-role">{user.role.toUpperCase()}</span>
                                         <ChevronDown
                                             size={14}
                                             className="nav-profile-logout-icon"
