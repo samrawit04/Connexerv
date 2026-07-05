@@ -17,53 +17,61 @@ public class ChatHub : Hub
         _context = context;
     }
 
-    /// <summary>
-    /// Called by the client to join a specific conversation group.
-    /// Only the two participants are allowed.
-    /// </summary>
+    // ─── Helpers ───────────────────────────────────────────────────────────────
+
+    private Guid GetUserId() =>
+        Guid.Parse(Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    private async Task<ChatConversation> GetConversationOrThrow(Guid convId, Guid userId)
+    {
+        var conv = await _context.ChatConversations.FindAsync(convId)
+            ?? throw new HubException("Conversation not found.");
+        if (conv.ClientId != userId && conv.ProviderUserId != userId)
+            throw new HubException("Access denied.");
+        return conv;
+    }
+
+    // ─── Group management ──────────────────────────────────────────────────────
+
+    /// <summary>Join a conversation's SignalR group (also used to receive call signals).</summary>
     public async Task JoinConversation(string conversationId)
     {
-        var userId = Guid.Parse(Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
+        var userId = GetUserId();
         if (!Guid.TryParse(conversationId, out var convId))
             throw new HubException("Invalid conversation ID.");
 
-        var conv = await _context.ChatConversations.FindAsync(convId);
-        if (conv == null) throw new HubException("Conversation not found.");
-
-        if (conv.ClientId != userId && conv.ProviderUserId != userId)
-            throw new HubException("Access denied.");
-
+        await GetConversationOrThrow(convId, userId);
         await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
     }
 
-    /// <summary>
-    /// Called by the client to leave a conversation group.
-    /// </summary>
     public async Task LeaveConversation(string conversationId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
     }
 
+    // ─── Messaging ─────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Send a message to the conversation. Persists to DB and broadcasts to the group.
+    /// Send a text or media message.  
+    /// For media, pass the Cloudinary URL as <paramref name="fileUrl"/> and set <paramref name="messageType"/>
+    /// to "audio" | "image" | "video" | "file".
     /// </summary>
-    public async Task SendMessage(string conversationId, string content)
+    public async Task SendMessage(
+        string conversationId,
+        string content,
+        string messageType = "text",
+        string? fileUrl    = null,
+        string? fileName   = null,
+        long?   fileSize   = null)
     {
-        if (string.IsNullOrWhiteSpace(content))
+        if (string.IsNullOrWhiteSpace(content) && string.IsNullOrWhiteSpace(fileUrl))
             throw new HubException("Message cannot be empty.");
 
-        var userId = Guid.Parse(Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
+        var userId = GetUserId();
         if (!Guid.TryParse(conversationId, out var convId))
             throw new HubException("Invalid conversation ID.");
 
-        var conv = await _context.ChatConversations.FindAsync(convId);
-        if (conv == null) throw new HubException("Conversation not found.");
-
-        if (conv.ClientId != userId && conv.ProviderUserId != userId)
-            throw new HubException("Access denied.");
-
+        await GetConversationOrThrow(convId, userId);
         var sender = await _context.Users.FindAsync(userId);
 
         var message = new ChatMessage
@@ -71,38 +79,41 @@ public class ChatHub : Hub
             ConversationId = convId,
             SenderId       = userId,
             Content        = content.Trim(),
-            SentAt         = DateTime.UtcNow
+            SentAt         = DateTime.UtcNow,
+            MessageType    = messageType,
+            FileUrl        = fileUrl,
+            FileName       = fileName,
+            FileSize       = fileSize,
         };
 
         _context.ChatMessages.Add(message);
         await _context.SaveChangesAsync();
 
-        // Broadcast to all members of the conversation group
         await Clients.Group(conversationId).SendAsync("ReceiveMessage", new
         {
             message.Id,
             message.ConversationId,
             message.SenderId,
-            SenderName = sender?.Name ?? "Unknown",
+            SenderName   = sender?.Name ?? "Unknown",
             message.Content,
             message.SentAt,
-            message.IsRead
+            message.IsRead,
+            message.MessageType,
+            message.FileUrl,
+            message.FileName,
+            message.FileSize,
         });
     }
 
-    /// <summary>
-    /// Mark all messages in a conversation as read for the current user.
-    /// </summary>
+    // ─── Read receipts ─────────────────────────────────────────────────────────
+
     public async Task MarkRead(string conversationId)
     {
-        var userId = Guid.Parse(Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
+        var userId = GetUserId();
         if (!Guid.TryParse(conversationId, out var convId))
             throw new HubException("Invalid conversation ID.");
 
-        var conv = await _context.ChatConversations.FindAsync(convId);
-        if (conv == null || (conv.ClientId != userId && conv.ProviderUserId != userId))
-            throw new HubException("Access denied.");
+        await GetConversationOrThrow(convId, userId);
 
         var unread = await _context.ChatMessages
             .Where(m => m.ConversationId == convId && m.SenderId != userId && !m.IsRead)
@@ -111,7 +122,53 @@ public class ChatHub : Hub
         foreach (var m in unread) m.IsRead = true;
         await _context.SaveChangesAsync();
 
-        // Notify the other participant that their messages were read
-        await Clients.Group(conversationId).SendAsync("MessagesRead", new { conversationId, readById = userId });
+        await Clients.Group(conversationId).SendAsync("MessagesRead",
+            new { conversationId, readById = userId });
+    }
+
+    // ─── WebRTC signaling ──────────────────────────────────────────────────────
+
+    /// <summary>Caller initiates a call — rings the other user in the conversation.</summary>
+    public async Task InitiateCall(string conversationId, string callType) // callType: "audio" | "video"
+    {
+        var userId = GetUserId();
+        if (!Guid.TryParse(conversationId, out var convId))
+            throw new HubException("Invalid conversation ID.");
+
+        await GetConversationOrThrow(convId, userId);
+        var caller = await _context.Users.FindAsync(userId);
+
+        // Broadcast to the OTHER party in the conversation (group minus self)
+        await Clients.OthersInGroup(conversationId).SendAsync("IncomingCall", new
+        {
+            conversationId,
+            callType,
+            callerId   = userId,
+            callerName = caller?.Name ?? "Unknown",
+        });
+    }
+
+    /// <summary>Relay a WebRTC SDP offer to the other party.</summary>
+    public async Task SendOffer(string conversationId, string sdpOffer)
+    {
+        await Clients.OthersInGroup(conversationId).SendAsync("ReceiveOffer", new { conversationId, sdpOffer });
+    }
+
+    /// <summary>Relay a WebRTC SDP answer back to the caller.</summary>
+    public async Task SendAnswer(string conversationId, string sdpAnswer)
+    {
+        await Clients.OthersInGroup(conversationId).SendAsync("ReceiveAnswer", new { conversationId, sdpAnswer });
+    }
+
+    /// <summary>Relay an ICE candidate to the other party for NAT traversal.</summary>
+    public async Task SendIceCandidate(string conversationId, string candidate)
+    {
+        await Clients.OthersInGroup(conversationId).SendAsync("ReceiveIceCandidate", new { conversationId, candidate });
+    }
+
+    /// <summary>End the call — notifies both parties to tear down WebRTC connections.</summary>
+    public async Task EndCall(string conversationId)
+    {
+        await Clients.Group(conversationId).SendAsync("CallEnded", new { conversationId });
     }
 }
