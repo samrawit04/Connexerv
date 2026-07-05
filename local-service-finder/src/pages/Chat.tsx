@@ -45,8 +45,10 @@ function fmtTime(d: string) {
   return new Date(d).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 }
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string || "")
-  .replace(/\/api$/, "");
+function isSameUser(id1?: string, id2?: string) {
+  if (!id1 || !id2) return false;
+  return id1.toLowerCase() === id2.toLowerCase();
+}
 
 /** Tell the Navbar to immediately reset its chat unread badge to 0. */
 function signalNavbarChatRead() {
@@ -122,7 +124,7 @@ export default function Chat() {
       setMessages(prev => {
         const withoutOptimistic = prev.filter(m =>
           !(m.id.startsWith("opt-") &&
-            m.senderId === msg.senderId &&
+            isSameUser(m.senderId, msg.senderId) &&
             m.content  === msg.content)
         );
         if (withoutOptimistic.some(m => m.id === msg.id)) return withoutOptimistic;
@@ -132,7 +134,7 @@ export default function Chat() {
       // Update sidebar preview + unread count
       setConversations(prev => prev.map(c => {
         if (c.id !== msg.conversationId) return c;
-        const incoming  = msg.senderId !== currentUid;
+        const incoming  = !isSameUser(msg.senderId, currentUid);
         const newUnread = incoming && !isActiveConv ? c.unreadCount + 1 : c.unreadCount;
         return {
           ...c,
@@ -173,11 +175,10 @@ export default function Chat() {
   useEffect(() => {
     const hub  = hubRef.current;
     const conv = activeConv;
-    if (!hub || !conv) return;
+    // Wait until connected to ensure JoinConversation succeeds
+    if (!hub || !conv || !connected) return;
 
     const joinWhenReady = async () => {
-      // Wait until connected (in case this runs during startup)
-      if (hub.state !== signalR.HubConnectionState.Connected) return;
       await hub.invoke("JoinConversation", conv.id).catch(() => {});
       await hub.invoke("MarkRead", conv.id).catch(() => {});
       // Tell the Navbar to immediately clear its unread badge
@@ -191,7 +192,7 @@ export default function Chat() {
         hub.invoke("LeaveConversation", conv.id).catch(() => {});
       }
     };
-  }, [activeConv?.id]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeConv?.id, connected]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Select a conversation ── */
   const openConversation = useCallback(async (conv: Conversation) => {
@@ -312,7 +313,7 @@ export default function Chat() {
                   <div className="chat-conv-row">
                     <span className="chat-conv-preview">
                       {conv.lastMessage
-                        ? (conv.lastMessage.senderId === user.id ? "You: " : "") + conv.lastMessage.content
+                        ? (isSameUser(conv.lastMessage.senderId, user.id) ? "You: " : "") + conv.lastMessage.content
                         : conv.subject}
                     </span>
                     {conv.unreadCount > 0 && (
@@ -372,10 +373,10 @@ export default function Chat() {
                 </div>
               ) : (
                 messages.map((msg, idx) => {
-                  const isMine = msg.senderId === user.id;
+                  const isMine = isSameUser(msg.senderId, user.id);
                   const isOptimistic = msg.id.startsWith("opt-");
                   const showAvatar =
-                    idx === 0 || messages[idx - 1].senderId !== msg.senderId;
+                    idx === 0 || !isSameUser(messages[idx - 1].senderId, msg.senderId);
                   return (
                     <div
                       key={msg.id}
