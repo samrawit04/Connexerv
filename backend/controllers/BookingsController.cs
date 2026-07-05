@@ -77,18 +77,35 @@ public class BookingsController : ControllerBase
     {
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+        // Use projection (.Select) instead of .Include to avoid pulling the entire object graph
+        // and causing massive circular JSON serialization overhead. This is much faster.
         var asCustomer = await _context.Bookings
-            .Include(b => b.Service)
-            .Include(b => b.Provider).ThenInclude(p => p.User)
             .Where(b => b.CustomerId == userId)
+            .OrderByDescending(b => b.Date)
+            .Select(b => new
+            {
+                b.Id,
+                b.Status,
+                b.Date,
+                Service = new { b.Service.Title },
+                Provider = new { User = new { Name = b.Provider.User.Name } }
+            })
             .ToListAsync();
 
         var provider = await _context.ServiceProviders.FirstOrDefaultAsync(p => p.UserId == userId);
-        var asProvider = provider == null ? new List<Booking>() : await _context.Bookings
-            .Include(b => b.Service)
-            .Include(b => b.Customer)
+        
+        var asProvider = provider == null ? new List<object>() : await _context.Bookings
             .Where(b => b.ProviderId == provider.Id)
-            .ToListAsync();
+            .OrderByDescending(b => b.Date)
+            .Select(b => new
+            {
+                b.Id,
+                b.Status,
+                b.Date,
+                Service = new { b.Service.Title },
+                Customer = new { b.Customer.Name }
+            })
+            .ToListAsync<object>();
 
         return Ok(new { asCustomer, asProvider });
     }
