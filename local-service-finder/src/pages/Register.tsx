@@ -65,17 +65,7 @@ export default function Register() {
             Whether you need help around the house, or want to grow your service business — we've got you covered.
           </p>
 
-          {/* Feature highlights grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxWidth: 420 }}>
-            {["Free to join", "5 000+ providers", "10 000+ bookings", "Instant match"].map((text, i) => (
-              <div key={i} style={{
-                background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)",
-                borderRadius: 12, padding: "12px 14px", textAlign: "center"
-              }}>
-                <span style={{ color: "#fff", fontWeight: 600, fontSize: 13 }}>{text}</span>
-              </div>
-            ))}
-          </div>
+
         </div>
 
         {/* Right — register card */}
