@@ -92,4 +92,4 @@ npm run dev
 **Samrawit Amare**
 
 * GitHub: https://github.com/samrawit04
-* LinkedIn: https://www.linkedin.com/in/samrawit-amare/
+* LinkedIn: https://www.linkedin.com/in/samrawitamare/
