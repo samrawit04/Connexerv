@@ -5,8 +5,8 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import {
   Send, MessageCircle, ArrowLeft, Loader2, CheckCheck,
-  Paperclip, Mic, Phone, Video, PhoneOff,
-  PhoneIncoming, FileText, Download, X, StopCircle,
+  Paperclip, Mic, Phone, Video, PhoneOff, VideoOff,
+  MicOff, PhoneIncoming, FileText, Download, X, StopCircle,
 } from "lucide-react";
 
 /* ── Types ──────────────────────────────────────────────────── */
@@ -67,6 +67,12 @@ function fmtSize(bytes: number) {
   return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
+function fmtDuration(secs: number) {
+  const m = Math.floor(secs / 60).toString().padStart(2, "0");
+  const s = (secs % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
+
 const BASE_URL = (import.meta.env.VITE_API_URL as string || "")
   .replace(/\/api$/, "");
 
@@ -115,6 +121,10 @@ export default function Chat() {
   const [callState,     setCallState]     = useState<CallState>("idle");
   const [callType,      setCallType]      = useState<"audio" | "video">("audio");
   const [incomingCall,  setIncomingCall]  = useState<IncomingCallInfo | null>(null);
+  const [isMuted,       setIsMuted]       = useState(false);
+  const [isCameraOff,   setIsCameraOff]   = useState(false);
+  const [callDuration,  setCallDuration]  = useState(0); // seconds elapsed while active
+  const callTimerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
   const peerRef         = useRef<RTCPeerConnection | null>(null);
   const localStreamRef  = useRef<MediaStream | null>(null);
   const localVideoRef   = useRef<HTMLVideoElement | null>(null);
@@ -136,13 +146,32 @@ export default function Chat() {
   const inputRef      = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef  = useRef<HTMLInputElement | null>(null);
 
-  // Sync call start time on state transitions
+  // Sync call start time and duration timer on state transitions
   useEffect(() => {
     if (callState === "active") {
       callStartTimeRef.current = Date.now();
-    } else if (callState === "idle") {
-      callStartTimeRef.current = null;
+      setCallDuration(0);
+      callTimerRef.current = setInterval(() => {
+        setCallDuration(s => s + 1);
+      }, 1000);
+    } else {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+        callTimerRef.current = null;
+      }
+      if (callState === "idle") {
+        callStartTimeRef.current = null;
+        setCallDuration(0);
+        setIsMuted(false);
+        setIsCameraOff(false);
+      }
     }
+    return () => {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+        callTimerRef.current = null;
+      }
+    };
   }, [callState]);
 
   useEffect(() => { activeConvRef.current = activeConv; }, [activeConv]);
@@ -198,6 +227,20 @@ export default function Chat() {
     setIncomingCall(null);
     callConvIdRef.current = null;
   }, [closePeer, callState, callType]);
+
+  const toggleMute = useCallback(() => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    stream.getAudioTracks().forEach(t => { t.enabled = !t.enabled; });
+    setIsMuted(prev => !prev);
+  }, []);
+
+  const toggleCamera = useCallback(() => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    stream.getVideoTracks().forEach(t => { t.enabled = !t.enabled; });
+    setIsCameraOff(prev => !prev);
+  }, []);
 
   const createPeer = useCallback((onIce: (c: RTCIceCandidate) => void): RTCPeerConnection => {
     const peer = new RTCPeerConnection(RTC_CONFIG);
@@ -646,20 +689,56 @@ export default function Chat() {
             {callType === "video" && (
               <div className="call-video-wrap">
                 <video ref={remoteVideoRef} autoPlay playsInline className="call-video-remote" />
-                <video ref={localVideoRef} autoPlay playsInline muted className="call-video-local" />
+                <video ref={localVideoRef} autoPlay playsInline muted className={`call-video-local ${isCameraOff ? "call-video-local--hidden" : ""}`} />
+                {isCameraOff && (
+                  <div className="call-camera-off-badge">
+                    <VideoOff size={16} /> Camera off
+                  </div>
+                )}
               </div>
             )}
             {callType === "audio" && (
               <div className="call-audio-visual">
-                <div className="call-avatar">{activeConv?.otherUser.name.charAt(0).toUpperCase()}</div>
+                <div className={`call-avatar ${isMuted ? "call-avatar--muted" : ""}`}>
+                  {activeConv?.otherUser.name.charAt(0).toUpperCase()}
+                </div>
                 <p className="call-name">{activeConv?.otherUser.name}</p>
                 <p className="call-subtitle">
-                  {callState === "calling" ? "Calling…" : "On call"}
+                  {callState === "calling" ? "Calling…" : fmtDuration(callDuration)}
                 </p>
               </div>
             )}
+            {callType === "video" && callState === "active" && (
+              <p className="call-duration-badge">{fmtDuration(callDuration)}</p>
+            )}
+            {callState === "calling" && callType === "video" && (
+              <p className="call-subtitle" style={{ marginBottom: 12 }}>Calling…</p>
+            )}
             <div className="call-actions">
-              <button className="call-btn call-btn--decline" onClick={endCall}>
+              {/* Mute / Unmute */}
+              {callState === "active" && (
+                <button
+                  className={`call-btn call-btn--control ${isMuted ? "call-btn--active-control" : ""}`}
+                  onClick={toggleMute}
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
+                </button>
+              )}
+
+              {/* Camera On / Off (video calls only) */}
+              {callState === "active" && callType === "video" && (
+                <button
+                  className={`call-btn call-btn--control ${isCameraOff ? "call-btn--active-control" : ""}`}
+                  onClick={toggleCamera}
+                  title={isCameraOff ? "Turn camera on" : "Turn camera off"}
+                >
+                  {isCameraOff ? <VideoOff size={22} /> : <Video size={22} />}
+                </button>
+              )}
+
+              {/* End call */}
+              <button className="call-btn call-btn--decline" onClick={endCall} title="End call">
                 <PhoneOff size={22} />
               </button>
             </div>

@@ -2133,4 +2133,64 @@ p {
 .chat-call-icon--completed {
   color: var(--teal);
 }
+
+/* ── Call control buttons (mute / camera) ── */
+.call-btn--control {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+}
+.call-btn--control:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.call-btn--active-control {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+.call-btn--active-control:hover {
+  background: rgba(239, 68, 68, 0.38);
+}
+
+/* Camera-off badge shown over local video pip */
+.call-camera-off-badge {
+  position: absolute;
+  bottom: 46px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Hide local video tile when camera is off */
+.call-video-local--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Muted avatar — faint red ring to indicate microphone off */
+.call-avatar--muted {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.55);
+}
+
+/* Call duration badge shown on video overlay */
+.call-duration-badge {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.35);
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin: 0 auto 14px;
+}
 
