@@ -50,7 +50,7 @@ export default function Providers() {
                 <div className="container">
                     <div className="hero-section" style={{ padding: "120px 28px 80px" }}>
                         <div className="hero-pill">
-                            <Zap size={14} /> LocalFinder - አሰሪና ሰራተኛ አገናኝ!
+                            <Zap size={14} /> Connexerv - አሰሪና ሰራተኛ አገናኝ!
                         </div>
                         <h1 className="hero-title">
                             Find the right person<br />

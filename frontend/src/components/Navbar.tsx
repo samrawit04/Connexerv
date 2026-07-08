@@ -67,7 +67,7 @@ export default function Navbar() {
                     <div className="nav-logo-icon">
                         <Home size={18} color="#fff" />
                     </div>
-                    <span>LocalFinder</span>
+                    <span>Connexerv</span>
                 </Link>
 
                 {/* Right-most nav section */}

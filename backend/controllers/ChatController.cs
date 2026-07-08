@@ -154,7 +154,7 @@ public class ChatController : ControllerBase
         var uploadParams = new RawUploadParams
         {
             File           = new FileDescription(file.FileName, stream),
-            Folder         = "local-service-finder/chat",
+            Folder         = "connexerv/chat",
             UseFilename    = true,
             UniqueFilename = true,
         };

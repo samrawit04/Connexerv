@@ -2,7 +2,7 @@
 
 > Connecting people with trusted local service providers in Addis Ababa.
 
-**Live Demo:** [connexerv.vercel.app](https://local-service-finder-pied.vercel.app/)  
+**Live Demo:** [connexerv.vercel.app](https://connexerv-pied.vercel.app/)  
 **GitHub:** [github.com/samrawit04/Connexerv](https://github.com/samrawit04/Connexerv)
 
 ---
