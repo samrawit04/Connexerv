@@ -27,7 +27,7 @@ function App() {
         <Route path="/jobs"             element={<JobBoard />} />
         <Route path="/jobs/:id"         element={<JobDetail />} />
         <Route path="/chat"             element={<Chat />} />
-        <Route path="/"                 element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+        <Route path="/"                 element={<Navigate to={user ? "/dashboard" : "/providers"} />} />
       </Routes>
     </>
   );

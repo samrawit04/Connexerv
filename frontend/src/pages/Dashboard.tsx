@@ -96,8 +96,8 @@ export default function Dashboard() {
             <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>
               Welcome back 👋
             </p>
-            <h1 style={{ fontSize: 36, fontWeight: 800 }}>Dashboard</h1>
-            <p style={{ marginTop: 8 }}>Manage your bookings and track your service history.</p>
+            <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: 800 }}>Dashboard</h1>
+            <p style={{ marginTop: 8, fontSize: "clamp(13px, 3vw, 15px)" }}>Manage your bookings and track your service history.</p>
           </div>
           {user?.role === "Provider" && (
             <Link to="/profile" className="btn btn-ghost" style={{ gap: 8 }}>
@@ -107,16 +107,15 @@ export default function Dashboard() {
         </div>
 
         {/* ── Stats ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 40 }}>
+        <div className="dash-stats-grid">
           {stats.map((s, i) => (
-            <div key={i} className={`card card-pad anim-fade anim-delay${i + 1}`}
-              style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(108,99,255,.12)", border: "1px solid rgba(108,99,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)", flexShrink: 0 }}>
+            <div key={i} className={`card card-pad anim-fade anim-delay${i + 1} dash-stat-card`}>
+              <div className="dash-stat-icon">
                 {s.icon}
               </div>
               <div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>{s.value}</div>
-                <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{s.label}</div>
+                <div className="dash-stat-value">{s.value}</div>
+                <div className="dash-stat-label">{s.label}</div>
               </div>
             </div>
           ))}

@@ -1,15 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import type { Provider } from "../types";
-import { MapPin, Search, ArrowRight, Zap, Star, Users, Calendar, Award } from "lucide-react";
+import { MapPin, Search, ArrowRight, Zap, Star, Users, Calendar, Award, LogIn, UserPlus } from "lucide-react";
+
+interface SiteStats {
+    providerCount: number;
+    completedBookingsCount: number;
+}
 
 export default function Providers() {
+    const { user } = useAuth();
     const [providers, setProviders] = useState<Provider[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [stats, setStats] = useState<SiteStats | null>(null);
 
-    useEffect(() => { fetchProviders(); }, []);
+    useEffect(() => {
+        fetchProviders();
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const res = await api.get<SiteStats>("/Stats");
+            setStats(res.data);
+        } catch { /* silent — fallback to null, UI shows placeholders */ }
+    };
 
     const fetchProviders = async (search = "") => {
         setLoading(true);
@@ -38,10 +56,22 @@ export default function Providers() {
                             Find the right person<br />
                             <span className="grad-text">for the job.</span>
                         </h1>
-                        <p className="hero-sub" style={{ margin: "0 0 44px" }}>
+                        <p className="hero-sub" style={{ margin: "0 0 32px" }}>
                             Verified plumbers, electricians, cleaners, tutors and more — all across Ethiopia.
                             Book easily, pay fairly, and leave an honest review.
                         </p>
+
+                        {/* CTA buttons for unauthenticated visitors */}
+                        {!user && (
+                            <div className="hero-cta-row" style={{ marginBottom: 32 }}>
+                                <Link to="/register" className="btn btn-primary" style={{ gap: 8, padding: "12px 28px", fontSize: 15 }}>
+                                    <UserPlus size={17} /> Get Started — It's Free
+                                </Link>
+                                <Link to="/login" className="btn btn-ghost" style={{ gap: 8, padding: "12px 24px", fontSize: 15 }}>
+                                    <LogIn size={17} /> Log In
+                                </Link>
+                            </div>
+                        )}
 
                         {/* Search bar */}
                         <form onSubmit={handleSearch} className="search-bar">
@@ -76,8 +106,16 @@ export default function Providers() {
                     flexWrap: "wrap",
                 }}>
                     {[
-                        { icon: <Users size={20} />, value: "500+", label: "Verified Providers" },
-                        { icon: <Calendar size={20} />, value: "10k+", label: "Jobs Completed" },
+                        {
+                            icon: <Users size={20} />,
+                            value: stats ? `${stats.providerCount}+` : "—",
+                            label: "Verified Providers"
+                        },
+                        {
+                            icon: <Calendar size={20} />,
+                            value: stats ? `${stats.completedBookingsCount}+` : "—",
+                            label: "Jobs Completed"
+                        },
                         { icon: <Star size={20} />, value: "4.8★", label: "Average Rating" },
                         { icon: <Award size={20} />, value: "24hrs", label: "Avg. Response Time" },
                     ].map((stat, i) => (

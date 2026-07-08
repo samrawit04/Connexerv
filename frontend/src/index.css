@@ -2193,4 +2193,61 @@ p {
   border-radius: 20px;
   margin: 0 auto 14px;
 }
+
+/* ── Dashboard responsive stats grid ── */
+.dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.dash-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dash-stat-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 12px;
+  background: rgba(108, 99, 255, 0.12);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.dash-stat-value {
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.dash-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+@media (max-width: 400px) {
+  .dash-stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* ── Hero CTA row (for unauthenticated landing) ── */
+.hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
 
