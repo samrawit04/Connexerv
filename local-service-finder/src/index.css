@@ -2107,4 +2107,30 @@ p {
   from { transform: translateX(-50%) translateY(20px); opacity: 0; }
   to   { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
+
+/* ── Call Logs in Chat ── */
+.chat-msg-bubble--call_missed,
+.chat-msg-bubble--call_declined,
+.chat-msg-bubble--call_completed {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted) !important;
+  font-size: 13px;
+  padding: 8px 12px;
+}
+.chat-media-call {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chat-call-icon {
+  flex-shrink: 0;
+}
+.chat-call-icon--missed,
+.chat-call-icon--declined {
+  color: #ef4444;
+}
+.chat-call-icon--completed {
+  color: var(--teal);
+}
 

@@ -160,7 +160,6 @@ public class ChatController : ControllerBase
         };
 
         // Use the correct upload API based on resource type
-        CloudinaryDotNet.Actions.RawUploadResult uploadResult;
         if (resourceType == "image")
         {
             var imgParams = new ImageUploadParams

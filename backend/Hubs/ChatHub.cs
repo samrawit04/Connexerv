@@ -171,4 +171,63 @@ public class ChatHub : Hub
     {
         await Clients.Group(conversationId).SendAsync("CallEnded", new { conversationId });
     }
+
+    /// <summary>Logs a call event (missed, declined, or completed) in the chat history.</summary>
+    public async Task LogCall(string conversationId, string callType, string status, int durationSeconds = 0)
+    {
+        var userId = GetUserId();
+        if (!Guid.TryParse(conversationId, out var convId))
+            throw new HubException("Invalid conversation ID.");
+
+        await GetConversationOrThrow(convId, userId);
+        var sender = await _context.Users.FindAsync(userId);
+
+        string content;
+        string messageType;
+
+        if (status == "Missed")
+        {
+            content = callType == "video" ? "Missed video call" : "Missed voice call";
+            messageType = "call_missed";
+        }
+        else if (status == "Declined")
+        {
+            content = callType == "video" ? "Declined video call" : "Declined voice call";
+            messageType = "call_declined";
+        }
+        else // Completed
+        {
+            var minutes = durationSeconds / 60;
+            var seconds = durationSeconds % 60;
+            var durationStr = minutes > 0 ? $"{minutes}m {seconds}s" : $"{seconds}s";
+            content = callType == "video" ? $"Video call ({durationStr})" : $"Voice call ({durationStr})";
+            messageType = "call_completed";
+        }
+
+        var message = new ChatMessage
+        {
+            ConversationId = convId,
+            SenderId       = userId,
+            Content        = content,
+            SentAt         = DateTime.UtcNow,
+            MessageType    = messageType,
+            FileSize       = durationSeconds // Storing duration in seconds inside FileSize
+        };
+
+        _context.ChatMessages.Add(message);
+        await _context.SaveChangesAsync();
+
+        await Clients.Group(conversationId).SendAsync("ReceiveMessage", new
+        {
+            message.Id,
+            message.ConversationId,
+            message.SenderId,
+            SenderName   = sender?.Name ?? "Unknown",
+            message.Content,
+            message.SentAt,
+            message.IsRead,
+            message.MessageType,
+            message.FileSize // Duration
+        });
+    }
 }

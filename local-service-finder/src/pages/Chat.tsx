@@ -120,6 +120,10 @@ export default function Chat() {
   const localVideoRef   = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef  = useRef<HTMLVideoElement | null>(null);
 
+  // Tracking refs for call logs
+  const callStartTimeRef = useRef<number | null>(null);
+  const callConvIdRef    = useRef<string | null>(null);
+
   // Core refs
   const hubRef        = useRef<signalR.HubConnection | null>(null);
   const activeConvRef = useRef<Conversation | null>(null);
@@ -127,6 +131,15 @@ export default function Chat() {
   const messagesEnd   = useRef<HTMLDivElement | null>(null);
   const inputRef      = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef  = useRef<HTMLInputElement | null>(null);
+
+  // Sync call start time on state transitions
+  useEffect(() => {
+    if (callState === "active") {
+      callStartTimeRef.current = Date.now();
+    } else if (callState === "idle") {
+      callStartTimeRef.current = null;
+    }
+  }, [callState]);
 
   useEffect(() => { activeConvRef.current = activeConv; }, [activeConv]);
   useEffect(() => { userIdRef.current     = user?.id;   }, [user?.id]);
@@ -157,15 +170,28 @@ export default function Chat() {
   }, []);
 
   const endCall = useCallback(async () => {
-    const conv = activeConvRef.current;
+    const convId = callConvIdRef.current;
     const hub  = hubRef.current;
-    if (conv && hub?.state === signalR.HubConnectionState.Connected) {
-      await hub.invoke("EndCall", conv.id).catch(() => {});
+    if (convId && hub?.state === signalR.HubConnectionState.Connected) {
+      await hub.invoke("EndCall", convId).catch(() => {});
+
+      let status = "Completed";
+      let duration = 0;
+      if (callState === "calling") {
+        status = "Missed";
+      } else if (callState === "ringing") {
+        status = "Declined";
+      } else if (callState === "active" && callStartTimeRef.current) {
+        duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+      }
+
+      await hub.invoke("LogCall", convId, callType, status, duration).catch(() => {});
     }
     closePeer();
     setCallState("idle");
     setIncomingCall(null);
-  }, [closePeer]);
+    callConvIdRef.current = null;
+  }, [closePeer, callState, callType]);
 
   const createPeer = useCallback((onIce: (c: RTCIceCandidate) => void): RTCPeerConnection => {
     const peer = new RTCPeerConnection(RTC_CONFIG);
@@ -196,6 +222,7 @@ export default function Chat() {
 
     setCallType(type);
     setCallState("calling");
+    callConvIdRef.current = conv.id;
 
     try {
       const stream = await startLocalStream(type);
@@ -225,6 +252,7 @@ export default function Chat() {
     setCallState("active");
     setCallType(info.callType);
     setIncomingCall(null);
+    callConvIdRef.current = info.conversationId;
 
     // We need to wait for the offer, which arrives via ReceiveOffer
     // So just set up the peer connection and stream here — the offer handler will complete it
@@ -296,6 +324,7 @@ export default function Chat() {
     conn.on("IncomingCall", (info: IncomingCallInfo) => {
       setIncomingCall(info);
       setCallState("ringing");
+      callConvIdRef.current = info.conversationId;
     });
 
     // ── WebRTC: Receive SDP offer (callee side) ──
@@ -793,6 +822,20 @@ export default function Chat() {
                               </div>
                               <Download size={16} style={{ flexShrink: 0 }} />
                             </a>
+                          )}
+
+                          {/* ── Call Logs ── */}
+                          {type.startsWith("call_") && (
+                            <div className="chat-media-call">
+                              {type === "call_missed" && <PhoneOff size={16} className="chat-call-icon chat-call-icon--missed" />}
+                              {type === "call_declined" && <PhoneOff size={16} className="chat-call-icon chat-call-icon--declined" />}
+                              {type === "call_completed" && (
+                                msg.content.toLowerCase().includes("video") 
+                                  ? <Video size={16} className="chat-call-icon chat-call-icon--completed" />
+                                  : <Phone size={16} className="chat-call-icon chat-call-icon--completed" />
+                              )}
+                              <span>{msg.content}</span>
+                            </div>
                           )}
                         </div>
 
