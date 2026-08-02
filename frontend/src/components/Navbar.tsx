@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import {
     LogOut, Home, Compass, LayoutDashboard,
-    UserCog, ChevronDown, Briefcase as BriefcaseIcon, MessageSquare
+    UserCog, ChevronDown, Briefcase as BriefcaseIcon, MessageSquare,
+    Sun, Moon
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 import api from "../services/api";
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -63,7 +66,7 @@ export default function Navbar() {
         <nav className="navbar">
             <div className="navbar-inner">
                 {/* Logo */}
-                <Link to={user ? "/providers" : "/"} className="nav-logo" style={{ textDecoration: "none" }}>
+                <Link to="/" className="nav-logo" style={{ textDecoration: "none" }}>
                     <div className="nav-logo-icon">
                         <Home size={18} color="#fff" />
                     </div>
@@ -73,6 +76,11 @@ export default function Navbar() {
                 {/* Right-most nav section */}
                 <div className="nav-right-container">
                     <div className="nav-links">
+                        <Link to="/" className={location.pathname === "/" ? "nav-link active" : "nav-link"}>
+                            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <Home size={16} /> <span className="nav-link-text">Home</span>
+                            </span>
+                        </Link>
                         <Link to="/providers" className={isActive("/providers")}>
                             <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                                 <Compass size={16} /> <span className="nav-link-text">Browse</span>
@@ -114,6 +122,16 @@ export default function Navbar() {
                     </div>
 
                     <div className="nav-auth-section">
+                        {/* Theme Toggle Button */}
+                        <button
+                            onClick={toggleTheme}
+                            className="theme-toggle-btn"
+                            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                            aria-label="Toggle Theme"
+                        >
+                            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
+
                         {user ? (
                             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                                 <NotificationBell />
