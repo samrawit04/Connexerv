@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import type { Provider } from "../types";
-import { MapPin, Search, ArrowRight, Star, Compass } from "lucide-react";
+import { MapPin, Search, ArrowRight, Star } from "lucide-react";
 
 // Module-level cache: persists across tab switches without re-fetching
 const providerCache: { [key: string]: Provider[] } = {};
@@ -72,7 +72,7 @@ export default function Providers() {
                             letterSpacing: ".1em",
                             marginBottom: 8
                         }}>
-                            <Compass size={16} /> Service Directory
+                            Service Directory
                         </div>
                         <h1 style={{ fontSize: "clamp(28px, 4vw, 36px)", fontWeight: 800, color: "var(--text-heading)", margin: 0 }}>
                             Browse Providers

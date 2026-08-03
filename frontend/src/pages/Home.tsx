@@ -5,8 +5,8 @@ import { useAuth } from "../context/AuthContext";
 import type { Provider } from "../types";
 import Footer from "../components/Footer";
 import {
-    MapPin, Search, ArrowRight, Zap, Star, Users, Calendar, Award, LogIn, UserPlus,
-    ShieldCheck, MessageSquare, CheckCircle, TrendingUp, Sparkles, Compass
+    MapPin, Search, ArrowRight, Star, Users, Calendar, Award, LogIn, UserPlus,
+    ShieldCheck, MessageSquare, CheckCircle, TrendingUp
 } from "lucide-react";
 
 interface SiteStats {
@@ -59,7 +59,7 @@ export default function Home() {
                 <div className="container">
                     <div className="hero-section">
                         <div className="hero-pill">
-                            <Zap size={14} /> Connexerv - አሰሪና ሰራተኛ አገናኝ!
+                            Connexerv - አሰሪና ሰራተኛ አገናኝ!
                         </div>
                         <h1 className="hero-title">
                             Find the right person<br />
@@ -150,14 +150,14 @@ export default function Home() {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
                         <div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 8 }}>
-                                <Sparkles size={16} /> Featured Professionals
+                                Featured Professionals
                             </div>
                             <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-heading)", margin: 0 }}>
                                 Top Service Providers
                             </h2>
                         </div>
                         <Link to="/providers" className="btn btn-ghost" style={{ gap: 8 }}>
-                            <Compass size={16} /> Browse All Providers <ArrowRight size={16} />
+                            Browse All Providers <ArrowRight size={16} />
                         </Link>
                     </div>
 
@@ -246,7 +246,7 @@ export default function Home() {
                             display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700,
                             color: "var(--accent)", textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 12
                         }}>
-                            <Sparkles size={16} /> Why Choose Connexerv
+                            Why Choose Connexerv
                         </div>
                         <h2 style={{ fontSize: "clamp(28px, 4vw, 36px)", fontWeight: 800, color: "var(--text-heading)", marginBottom: 16 }}>
                             Built to connect Ethiopia with verified local talent.
