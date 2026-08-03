@@ -4,6 +4,9 @@ import api from "../services/api";
 import type { Provider } from "../types";
 import { MapPin, Search, ArrowRight, Star, Compass } from "lucide-react";
 
+// Module-level cache: persists across tab switches without re-fetching
+const providerCache: { [key: string]: Provider[] } = {};
+
 export default function Providers() {
     const [searchParams, setSearchParams] = useSearchParams();
     const initialQuery = searchParams.get("search") || "";
@@ -19,9 +22,17 @@ export default function Providers() {
     }, [searchParams]);
 
     const fetchProviders = async (search = "") => {
+        const cacheKey = search.trim().toLowerCase();
+        // Return cached result instantly — no loading flash
+        if (providerCache[cacheKey]) {
+            setProviders(providerCache[cacheKey]);
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
             const res = await api.get(`/Providers${search ? `?search=${search}` : ""}`);
+            providerCache[cacheKey] = res.data;
             setProviders(res.data);
         } catch { /* empty */ }
         finally { setLoading(false); }

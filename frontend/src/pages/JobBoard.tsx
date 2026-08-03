@@ -188,8 +188,8 @@ export default function JobBoard() {
                   fontSize: 12, fontWeight: 600, cursor: "pointer", font: "inherit",
                   transition: "all .15s",
                   borderColor: catFilter === c ? "var(--accent)" : "var(--border)",
-                  background: catFilter === c ? "rgba(108,99,255,.15)" : "transparent",
-                  color: catFilter === c ? "#fff" : "var(--text-muted)"
+                  background: catFilter === c ? "var(--accent)" : "transparent",
+                  color: catFilter === c ? "#ffffff" : "var(--text-muted)"
                 }}
               >
                 {c}
@@ -230,7 +230,7 @@ export default function JobBoard() {
                     </span>
                   </div>
 
-                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 8, lineHeight: 1.3 }}>{job.title}</h3>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--text-heading)", marginBottom: 8, lineHeight: 1.3 }}>{job.title}</h3>
                   <p style={{
                     color: "var(--text-muted)", fontSize: 13, lineHeight: 1.6, marginBottom: 16,
                     display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden"
@@ -264,7 +264,11 @@ export default function JobBoard() {
                   </div>
                 </Link>
                 {i < jobs.length - 1 && (
-                  <hr style={{ border: 0, borderBottom: "1px solid rgba(255, 255, 255, 0.08)", margin: "8px 0" }} />
+                  <div style={{
+                    height: 1,
+                    background: "linear-gradient(90deg, transparent, var(--border-bright) 20%, var(--border-bright) 80%, transparent)",
+                    margin: "4px 0"
+                  }} />
                 )}
               </div>
             ))}

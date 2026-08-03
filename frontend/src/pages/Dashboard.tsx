@@ -175,7 +175,7 @@ export default function Dashboard() {
                           <span className={statusStyle(b.status)[0]}>{statusStyle(b.status)[1]}</span>
                         </div>
                         <p style={{ fontSize: 14, margin: "0 0 4px" }}>
-                          Provider: <span style={{ color: "#fff", fontWeight: 500 }}>{b.provider?.user?.name}</span>
+                          Provider: <span style={{ color: "var(--text-heading)", fontWeight: 500 }}>{b.provider?.user?.name}</span>
                         </p>
                         <p style={{ fontSize: 13, margin: 0, color: "var(--text-faint)" }}>
                           Scheduled: {new Date(b.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
@@ -265,14 +265,14 @@ export default function Dashboard() {
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                           <h3 style={{ fontSize: 17, margin: 0 }}>
-                            <Link to={`/jobs/${post.id}`} style={{ color: "#fff", textDecoration: "none" }}>
+                            <Link to={`/jobs/${post.id}`} style={{ color: "var(--text-heading)", textDecoration: "none" }}>
                               {post.title}
                             </Link>
                           </h3>
                           <span className={statusStyle(post.status)[0]}>{statusStyle(post.status)[1]}</span>
                         </div>
                         <p style={{ fontSize: 14, margin: "0 0 4px", color: "var(--text-muted)" }}>
-                          Category: <span style={{ color: "#fff" }}>{post.category}</span>
+                          Category: <span style={{ color: "var(--text-heading)", fontWeight: 500 }}>{post.category}</span>
                         </p>
                         <p style={{ fontSize: 13, margin: 0, color: "var(--text-faint)" }}>
                           Posted: {new Date(post.createdAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
@@ -319,7 +319,7 @@ export default function Dashboard() {
                           <span className={statusStyle(b.status)[0]}>{statusStyle(b.status)[1]}</span>
                         </div>
                         <p style={{ fontSize: 14, margin: "0 0 4px" }}>
-                          Customer: <span style={{ color: "#fff", fontWeight: 500 }}>{b.customer?.name}</span>
+                          Customer: <span style={{ color: "var(--text-heading)", fontWeight: 500 }}>{b.customer?.name}</span>
                         </p>
                         <p style={{ fontSize: 13, margin: 0, color: "var(--text-faint)" }}>
                           Requested: {new Date(b.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
@@ -365,14 +365,14 @@ export default function Dashboard() {
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                           <h3 style={{ fontSize: 17, margin: 0 }}>
-                            <Link to={`/jobs/${app.job.id}`} style={{ color: "#fff", textDecoration: "none" }}>
+                            <Link to={`/jobs/${app.job.id}`} style={{ color: "var(--text-heading)", textDecoration: "none" }}>
                               {app.job.title}
                             </Link>
                           </h3>
                           <span className={statusStyle(app.status)[0]}>{statusStyle(app.status)[1]}</span>
                         </div>
                         <p style={{ fontSize: 14, margin: "0 0 4px" }}>
-                          Customer: <span style={{ color: "#fff", fontWeight: 500 }}>{app.job.customerName}</span>
+                          Customer: <span style={{ color: "var(--text-heading)", fontWeight: 500 }}>{app.job.customerName}</span>
                         </p>
                         <p style={{ fontSize: 13, margin: 0, color: "var(--text-faint)" }}>
                           Applied: {new Date(app.appliedAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
@@ -383,7 +383,7 @@ export default function Dashboard() {
                           {app.job.category}
                         </span>
                         {app.job.budget && (
-                          <div style={{ color: "#22d3ee", fontWeight: 700, fontSize: 14, marginTop: 8 }}>
+                          <div style={{ color: "var(--teal)", fontWeight: 700, fontSize: 14, marginTop: 8 }}>
                             ${app.job.budget}
                           </div>
                         )}

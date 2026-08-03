@@ -1222,7 +1222,7 @@ p {
 
 .tab.active {
   background: var(--surface);
-  color: #fff;
+  color: var(--text-heading);
   box-shadow: var(--shadow-sm);
 }
 
@@ -1262,7 +1262,7 @@ p {
 .section-heading {
   font-size: 26px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-heading);
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -1446,7 +1446,7 @@ p {
   margin: 0 0 4px 0;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-heading);
 }
 
 .notif-item-msg {
@@ -1514,7 +1514,7 @@ p {
 .chat-sidebar-title {
   font-size: 17px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-heading);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1581,7 +1581,7 @@ p {
 .chat-conv-name {
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-heading);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1675,7 +1675,7 @@ p {
 .chat-panel-name {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-heading);
 }
 
 .chat-panel-subject {
@@ -2315,7 +2315,7 @@ p {
 .dash-stat-value {
   font-size: clamp(20px, 4vw, 28px);
   font-weight: 800;
-  color: #fff;
+  color: var(--text-heading);
   line-height: 1.1;
 }
 
