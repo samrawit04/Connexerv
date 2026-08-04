@@ -13,6 +13,9 @@ Connexerv is a full-stack service marketplace that connects customers with trust
 
 <img width="1891" height="866" alt="Screenshot 2026-07-08 205654" src="https://github.com/user-attachments/assets/c1dacf5b-f0eb-4dc0-bf8f-39401a1a9cfd" />
 
+<img width="1335" height="604" alt="image" src="https://github.com/user-attachments/assets/e5b7dc51-e8e1-452a-ac2f-5d29e6c6dea5" />
+
+
 <img width="1848" height="857" alt="Screenshot 2026-07-08 205724" src="https://github.com/user-attachments/assets/37a277a4-48b1-4351-b52a-7b47b2161c8c" />
 
 
