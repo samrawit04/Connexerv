@@ -5,7 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import {
     LogOut, Home, Compass, LayoutDashboard,
     UserCog, ChevronDown, Briefcase as BriefcaseIcon, MessageSquare,
-    Sun, Moon
+    Sun, Moon, Menu, X, LogIn, UserPlus
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 import api from "../services/api";
@@ -16,6 +16,7 @@ export default function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const [chatUnread, setChatUnread] = useState(0);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +24,13 @@ export default function Navbar() {
         logout();
         navigate("/login");
         setMenuOpen(false);
+        setMobileOpen(false);
     };
+
+    // Close mobile menu on route change
+    useEffect(() => {
+        setMobileOpen(false);
+    }, [location.pathname]);
 
     const isActive = (path: string) =>
         location.pathname.startsWith(path) ? "nav-link active" : "nav-link";
@@ -189,11 +196,80 @@ export default function Navbar() {
                             </div>
                         ) : (
                             <>
-                                <Link to="/login" className="btn btn-ghost" style={{ padding: "8px 18px" }}>Login</Link>
-                                <Link to="/register" className="btn btn-primary" style={{ padding: "8px 18px" }}>Get Started</Link>
+                                <Link to="/login" className="btn btn-ghost nav-desktop-auth" style={{ padding: "8px 18px" }}>Login</Link>
+                                <Link to="/register" className="btn btn-primary nav-desktop-auth" style={{ padding: "8px 18px" }}>Get Started</Link>
                             </>
                         )}
+
+                        {/* ── Hamburger (mobile only) ── */}
+                        <button
+                            className="nav-hamburger"
+                            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                            onClick={() => setMobileOpen(prev => !prev)}
+                        >
+                            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+                        </button>
                     </div>
+                </div>
+            </div>
+
+            {/* ── Mobile Drawer ── */}
+            <div className={`mobile-menu${mobileOpen ? " mobile-menu-open" : ""}`}>
+                <div className="mobile-menu-inner">
+                    {/* Nav links */}
+                    <Link to="/" className={`mobile-nav-link${location.pathname === "/" ? " active" : ""}`}>
+                        <Home size={18} /> Home
+                    </Link>
+                    <Link to="/providers" className={`mobile-nav-link${location.pathname.startsWith("/providers") ? " active" : ""}`}>
+                        <Compass size={18} /> Browse Providers
+                    </Link>
+                    {user && (
+                        <Link to="/jobs" className={`mobile-nav-link${location.pathname.startsWith("/jobs") ? " active" : ""}`}>
+                            <BriefcaseIcon size={18} /> Jobs
+                        </Link>
+                    )}
+                    {user && (
+                        <Link to="/dashboard" className={`mobile-nav-link${location.pathname.startsWith("/dashboard") ? " active" : ""}`}>
+                            <LayoutDashboard size={18} /> Dashboard
+                        </Link>
+                    )}
+                    {user && (
+                        <Link
+                            to="/chat"
+                            className={`mobile-nav-link${location.pathname.startsWith("/chat") ? " active" : ""}`}
+                            onClick={() => setChatUnread(0)}
+                        >
+                            <MessageSquare size={18} /> Chat
+                            {chatUnread > 0 && (
+                                <span className="notif-badge" style={{ position: "static", transform: "none", marginLeft: 4 }}>
+                                    {chatUnread > 99 ? "99+" : chatUnread}
+                                </span>
+                            )}
+                        </Link>
+                    )}
+
+                    <div className="mobile-menu-divider" />
+
+                    {/* Auth actions */}
+                    {user ? (
+                        <>
+                            <Link to="/profile" className="mobile-nav-link">
+                                <UserCog size={18} /> Update Profile
+                            </Link>
+                            <button className="mobile-nav-link mobile-nav-logout" onClick={handleLogout}>
+                                <LogOut size={18} /> Logout
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" className="mobile-nav-link">
+                                <LogIn size={18} /> Login
+                            </Link>
+                            <Link to="/register" className="btn btn-primary" style={{ marginTop: 4, justifyContent: "center", gap: 8, display: "flex" }}>
+                                <UserPlus size={17} /> Get Started — It's Free
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>
