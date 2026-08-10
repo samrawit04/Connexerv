@@ -29,7 +29,7 @@ export default function Home() {
 
     const fetchStats = async () => {
         try {
-            const res = await api.get<SiteStats>("/Providers/stats");
+            const res = await api.get<SiteStats>("/Stats");
             setStats(res.data);
         } catch { /* empty */ }
     };
